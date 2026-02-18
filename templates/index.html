@@ -6,10 +6,15 @@
 </head>
 
 <body>
+    
+    <form action="/logout">
+        <button class="exit">Выйти</button>  
+    </form>
+
     <div class="msgs" id="msgs">
         {% for m in msgs %}
         <!-- msgs: [(bob,hi)] -->
-        <div class="msg">{{ m[0] }}: {{ m[1] }}</div>
+        <div class="msg">{{ m[0] }}: {{ m[1]|safe }}</div>
         {% endfor %}
     </div>
 
@@ -21,6 +26,12 @@
             <button>Send</button>
         </div>
     </form>
+    {% if is_admin %}
+        <form action="/admin">
+       <button class="admins">Админ</button>  
+     </form>
+
+    {% endif %}
     <script>
         document.getElementById('msgs').scrollTop = 1000000;
 

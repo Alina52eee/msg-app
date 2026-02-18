@@ -77,7 +77,13 @@ def index():
     msgs = conn.execute("SELECT * FROM msgs").fetchall()
     conn.close()
 
-    return render_template('index.html', msgs=msgs)
+    is_admin = False
+    user = session.get('username')
+
+    if user and user == ADMIN_USERNAME:
+        is_admin = True
+    
+    return render_template('index.html', msgs=msgs,is_admin=is_admin)
 
 # ---------------------------
 # Админ панель

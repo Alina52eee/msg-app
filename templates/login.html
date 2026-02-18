@@ -3,17 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
+    <style>
+        body{
+            text-align: center;
+        }
+        button{
+            font-size: 25px;
+            background: #dd5275;
+           padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        input{
+            font-size: 30px;
+            padding: 10px;
+            margin: 5px;
+        }
+    </style>
 </head>
 <body>
     <form method="post">
+    
         <div>{{ sysmsg }}</div>
         <div>
            
             <input type="text" name="username" placeholder="User..." value={{formuser}}>
+            <br>
+            <br>
             <input type="text" name="password" placeholder="Pass..." value={{formpass}}>
         </div>
-
-        <button>Войти</button>
+         <br>
+        <button type="submit">Войти</button>
     </form>
+
+
 </body>
 </html>

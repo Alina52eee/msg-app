@@ -20,7 +20,8 @@ def init_db():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS msgs (
             username TEXT,
-            msg TEXT
+            msg TEXT,
+            img TEXT
         )
     """)
 
@@ -60,12 +61,13 @@ def index():
     # POST — отправка сообщения
     if request.method == 'POST':
         msg = request.form['msg'].strip()
+        img = request.form['img'].strip()
 
         if msg:
             conn = sqlite3.connect(DB_PATH)
             conn.execute(
-                "INSERT INTO msgs (username, msg) VALUES (?, ?)",
-                (session['username'], msg)
+                "INSERT INTO msgs (username, msg, img) VALUES (?, ?, ?)",
+                (session['username'], msg, img)
             )
             conn.commit()
             conn.close()
@@ -103,6 +105,25 @@ def admin():
         return render_template('admin.html',users=users)
     else:
         return "Доступ запрещен."
+
+
+# ---------------------------
+# Удаление пользователей
+# ---------------------------
+@app.route('/delete_user', methods=['GET', 'POST'])
+def delete_user():
+    user = request.form['user'].strip()
+    
+    conn = sqlite3.connect(DB_PATH)
+
+    conn.execute("DELETE FROM users WHERE username = ?", (user,))
+
+    conn.commit()
+    conn.close()
+
+    return user + "был удалён."
+
+
 # ---------------------------
 # Просмотр базы (для отладки)
 # ---------------------------

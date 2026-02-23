@@ -10,13 +10,13 @@ body{
 .msgs {
     width: 100vw;
     overflow-y: auto;
-    background: teal;
+    background: rgb(128, 15, 0);
 }
 .msg{
     padding: 5px;
     font-size: 24px;
-    background: #c0ffd3;
-    box-shadow: 2px 2px 2px #43bf68;
+    background: #cfffc0;
+    box-shadow: 2px 2px 2px #4da737;
     margin: 10px; 
 }
 
@@ -35,6 +35,7 @@ input{
 
 button{
     font-size: 30px;
+    background-color: #974949;
 }
 
 

@@ -9,6 +9,7 @@ DB_PATH = "data.db"
 
 ADMIN_USERNAME = "admin"
 ADMIN_PASSWORD = "secret"
+AUTO_REGISTRATION = True
 
 # ---------------------------
 # Инициализация базы данных
@@ -25,6 +26,8 @@ def init_db():
         )
     """)
 
+
+    hashed = generate_password_hash(ADMIN_PASSWORD)
     # Таблица пользователей
     conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -34,9 +37,12 @@ def init_db():
     """)
 
     # Создание админ аккаунта
-    hashed = generate_password_hash(ADMIN_PASSWORD)
+    admin = conn.execute("SELECT username FROM users WHERE username = ?", (ADMIN_USERNAME,)).fetchall()
 
-    conn.execute(
+    if admin == []:    
+       hashed = generate_password_hash(ADMIN_PASSWORD)
+
+       conn.execute(
         "INSERT INTO users (username, password) VALUES (?, ?)",
          (ADMIN_USERNAME, hashed)
         )
@@ -121,8 +127,53 @@ def delete_user():
     conn.commit()
     conn.close()
 
-    return user + "был удалён."
+    return redirect('/admin')
 
+# ---------------------------
+# Создание пользователей
+# ---------------------------
+@app.route('/create_user', methods=['GET', 'POST'])
+def craete_user():
+    username = request.form['username'].strip()
+    password = request.form['password'].strip()
+
+    conn = sqlite3.connect(DB_PATH)
+
+    # Проверяем, существует ли пользователь
+    user = conn.execute(
+        "SELECT password FROM users WHERE username = ?",
+        (username,)
+    ).fetchone()
+
+    if user is None :
+        # Пользователя нет → создаём аккаунт
+        hashed = generate_password_hash(password)
+
+        conn.execute(
+            "INSERT INTO users (username, password) VALUES (?, ?)",
+            (username, hashed)
+        )
+        conn.commit()
+        conn.close()
+
+    return redirect('/admin')
+
+# ---------------------------
+# Авто-регистрация
+# ---------------------------
+@app.route('/autoreg', methods=['GET', 'POST'])
+def autoreg():
+    global AUTO_REGISTRATION
+    areg = request.form.get('autoreg')
+    
+    print(areg)
+
+    if areg == None:
+      AUTO_REGISTRATION = False
+    else:
+      AUTO_REGISTRATION = True
+
+    return redirect('/admin')
 
 # ---------------------------
 # Просмотр базы (для отладки)
@@ -144,7 +195,8 @@ def database():
 # ---------------------------
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-
+    global AUTO_REGISTRATION
+    
     if request.method == 'POST':
         username = request.form['username'].strip()
         password = request.form['password'].strip()
@@ -160,7 +212,7 @@ def login():
             (username,)
         ).fetchone()
 
-        if user is None:
+        if user is None and AUTO_REGISTRATION:
             # Пользователя нет → создаём аккаунт
             hashed = generate_password_hash(password)
 
@@ -174,7 +226,10 @@ def login():
             session['username'] = username
             return redirect('/')
 
-        else:
+        elif user is None and AUTO_REGISTRATION == False:
+                conn.close()
+                return render_template('login.html', sysmsg="Авто-регистрация отключена.")
+        elif user is not None:
             # Пользователь существует → проверяем пароль
             stored_hash = user[0]
 
@@ -182,6 +237,7 @@ def login():
                 conn.close()
                 session['username'] = username
                 return redirect('/')
+
             else:
                 conn.close()
                 return render_template('login.html', sysmsg="Неверный пароль")
